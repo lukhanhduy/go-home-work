@@ -120,6 +120,27 @@ func (s *ToDoService) addTask(resp http.ResponseWriter, req *http.Request) {
 	t.CreatedDate = now.Format("2006-01-02")
 
 	resp.Header().Set("Content-Type", "application/json")
+	tasks, err := s.Store.RetrieveTasks(
+		req.Context(),
+		sql.NullString{
+			String: userID,
+			Valid:  true,
+		},
+		sql.NullString{
+			String: t.CreatedDate,
+			Valid:  true,
+		},
+	)
+	if err == nil || len(tasks) > 4 {
+		print(len(tasks))
+		if len(tasks) > 4 {
+			resp.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(resp).Encode(map[string]string{
+				"error_message": "Limit Create Today",
+			})
+			return
+		}
+	}
 
 	err = s.Store.AddTask(req.Context(), t)
 	if err != nil {
@@ -156,7 +177,6 @@ func (s *ToDoService) createToken(id string) (string, error) {
 
 func (s *ToDoService) validToken(req *http.Request) (*http.Request, bool) {
 	token := req.Header.Get("Authorization")
-
 	claims := make(jwt.MapClaims)
 	t, err := jwt.ParseWithClaims(token, claims, func(*jwt.Token) (interface{}, error) {
 		return []byte(s.JWTKey), nil
