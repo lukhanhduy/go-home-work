@@ -11,13 +11,13 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/manabie-com/togo/internal/storages"
-	sqllite "github.com/manabie-com/togo/internal/storages/sqlite"
+	"github.com/manabie-com/togo/internal/storages/pqsql"
 )
 
 // ToDoService implement HTTP server
 type ToDoService struct {
 	JWTKey string
-	Store  *sqllite.LiteDB
+	Store  *pqsql.LiteDB
 }
 
 func (s *ToDoService) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
@@ -131,8 +131,7 @@ func (s *ToDoService) addTask(resp http.ResponseWriter, req *http.Request) {
 			Valid:  true,
 		},
 	)
-	if err == nil || len(tasks) > 4 {
-		print(len(tasks))
+	if err == nil {
 		if len(tasks) > 4 {
 			resp.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(resp).Encode(map[string]string{
