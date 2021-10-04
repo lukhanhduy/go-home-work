@@ -15,7 +15,7 @@ import (
 
 func main() {
 	fmt.Print("on init")
-	connStr := "user=compose-postgres dbname=compose-postgres sslmode=verify-full"
+	connStr := "postgres://compose-postgres:compose-postgres@localhost/pqgotest?sslmode=verify-full"
 
 	fmt.Print("on init 1")
 	db, err := sql.Open("postgres", connStr)
